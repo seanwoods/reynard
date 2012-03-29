@@ -1,0 +1,64 @@
+<%inherit file="base.html"/>
+<%block name="title">Object Editor</%block>
+
+%if class_:
+    <% action = url('/objects/%s/%s' % (class_, identifier)) %>
+%else:
+    <% action = url('/objects/%s' %(class_)) %>
+%endif
+
+<%def name="select_box(ident, val, pointer_values)">
+<select id="${ident.replace('~','-')}" name="${ident.split('~')[0]}">
+    <option value="">-- No Value --</option>
+%for pident, pcapt in pointer_values.items():
+    %if val == pident:
+    <option value="${pident}" selected="selected">${pcapt}</option>
+    %else:
+    <option value="${pident}">${pcapt}</option>
+    %endif
+%endfor
+</select>
+</%def>
+
+<form action="${action}" method="post" autocomplete="off">
+    <table class="rey-table rey-form">
+    %for offset, urn, ident, caption, type, extra in schema:
+    <% val = data.get(ident, '') %>
+    %if type == 'id':
+    <input type="hidden" id="${ident}" name="${ident}" value="${val|h}"/>
+    %elif type in ('P', 'PM'):
+    <tr>
+        <th>${caption}</th>
+        <td>
+            <div class="rey-multipointer">
+            %if type == 'P':
+            ${select_box(ident, val, pointers[extra])}
+            %else:
+            ${select_box(ident + '~new', '', pointers[extra])}
+            %for idx, v in enumerate(val.split(' ')):
+            ${select_box(ident + '~' + str(idx), v, pointers[extra])}
+            %endfor
+            %endif
+            </div>
+        </td>
+    </tr>
+    %else:
+    <tr>
+        <th>${caption}</th>
+        <td><input type="text" name="${ident}" value="${val|h}" size="45"/></td>
+    </tr>
+    %endif
+    %endfor
+    <input type="hidden"
+           id="__mode"
+           name="__mode"
+           value="${mode} ${class_} ${view}"/>
+   <tr><td colspan="2">
+   <input class="rey-button" id="__prev" name="__prev" type="submit" value="Prev" />
+   <input class="rey-button" id="__save" name="__save" type="submit" value="Save" />
+   <input class="rey-button" id="__save_ret" name="__save_ret" type="submit" value="Save and Return" />
+   <input class="rey-button" id="__save_new" name="__save_new" type="submit" value="Save and Create New" />
+   <input class="rey-button" id="__next" name="__next" type="submit" value="Next" /> 
+    </td></tr>
+    </table>
+</form>

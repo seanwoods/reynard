@@ -1,0 +1,70 @@
+<!doctype html>
+<link rel="stylesheet" href="/static/common.css"/>
+<title><%block name="title"/></title>
+
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+%for j in js:
+<script type="text/javascript" src="/static/${j}"></script>
+%endfor
+<script type="text/javascript">
+
+var base_url = "${url('/')}";
+var current_class = "${current_class}";
+
+function isRelevantSelectValue(val) {
+    if ( (val != '') && (val != '-- Select --') ) {
+        return 1;
+    }
+
+    return 0;
+}
+
+$(document).ready(function (e) {
+
+    $("#table_selector").change(function (e) {
+        if (isRelevantSelectValue($(this).val())) {
+            window.location = base_url + 'objects/' + $(this).val();
+        }
+    });
+    
+    $("#view_selector").change(function (e) {
+        if (isRelevantSelectValue($(this).val())) {
+            window.location =
+                base_url + 'views/' + $(this).val().replace('_', '-');
+        }
+    });
+
+});
+</script>
+
+<!-- if g.user -->
+
+<label for="table_selector"><b>Objects:</b></label>
+<select id="table_selector">
+    <option id="">-- Select --</option>
+
+%for ident, caption in classes.items():
+    %if ident == current_class:
+    <option value="${ident}" selected="selected">${caption}</option>
+    %else:
+    <option value="${ident}">${caption}</option>
+    %endif
+%endfor
+</select>
+
+<label for="view_selector"><b>Views:</b></label>
+<select id="view_selector">
+    <option id="">-- Select --</option>
+    %for ident, abbrev, caption in views:
+    <option value="${abbrev}">${caption}</option>
+    %endfor
+</select>
+
+<span style="padding-left: 10px;">
+  Logged in as <b>{ g.user }</b>
+  <small><a href="${url('/logout')}">Log Out</a></small>
+</span>
+
+<!-- end if g.user -->
+
+${self.body()}

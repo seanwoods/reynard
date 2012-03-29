@@ -1,0 +1,23 @@
+[database]
+topology = "tcp://127.0.0.1:1841"
+perflog = True
+
+[/]
+tools.auth.on = True
+tools.auth.allowed_ip = ['127.0.0.1', '192.168.56.1']
+tools.connect.on = True
+tools.disconnect.on = True
+tools.gzip.on = True
+tools.sessions.on = True
+tools.sessions.storage_type = "file"
+tools.sessions.storage_path = "/home/johnny/sessions"
+tools.sessions.timeout = 60
+
+[/api]
+tools.connect.on = True
+tools.disconnect.on = True
+tools.gzip.on = True
+
+[/static]
+tools.staticdir.on = True
+tools.staticdir.dir = "/home/johnny/static"

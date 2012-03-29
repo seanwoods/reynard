@@ -1,0 +1,202 @@
+<%inherit file="base.html"/>
+<%block name="title">Define View</%block>
+
+<p>Create a view for object class: <b>${class_}</b></p>
+
+<div class="rey-leftright-picker">
+
+<form action="${url('/views/%s' % ident)}"
+      method="post"
+      enctype="application/x-www-form-urlencoded" autocomplete="off">
+
+%if 'id' in view:
+<input type="hidden" name="_id" id="_id" value="{{ view['_id'] }}"/>
+%endif
+
+<p>
+  <b>Short Name:</b>
+  <input type="text"
+         name="mnemonic"
+         id="mnemonic"
+         value="${view.get('mnemonic')}"
+         size="10"/>
+  <b>Description:</b>
+  <input type="text"
+         name="description"
+         id="description"
+         value="${view.get('description')}"
+         size="35"/>
+</p>
+
+<table class="field-choice">
+  <tr>
+    <th colspan="3" class="section">
+      Arguments
+      <button type="button" class="arg-add">Add</button>
+    </th>
+  </tr>
+  <tr>
+    <td colspan="3">
+      <p class="arg-instr">
+        Enter an array of <em>name &rarr; description</em> pairs.  These
+        will be supplied to the view via the request mechanism (e.g. query
+        string) and available in the criteria section.  To reference an
+        argument, use the syntax <em>$name</em>.
+      </p>
+    </td>
+  </tr>
+  %for idx, rec in enumerate(view.get('args',[])):
+  <tr class="arg-row">
+    <td colspan="3">
+      <input type="text"
+             id="arg-name-${idx}"
+             name="arg-name-${idx}"
+             value="${rec[0]}"
+             size="10"/>
+      <input type="text"
+             id="arg-desc-${idx}"
+             name="arg-desc-${idx}"
+             value="${rec[1]}"
+             size="45"/>
+    </td>
+  </tr>
+  %endfor
+  <tr>
+    <th colspan="3" class="section">Field Selection</th>
+  </tr>
+  <tr>
+    <th>Fields Available</th>
+    <th>&nbsp;</th>
+    <th>Fields Chosen</th>
+  </tr>
+  <tr>
+    <td>
+      <select size="10" id="fields-from" class="left">
+        %for field, caption in schema:
+            %if field not in view['fields']:
+                <option value="${field}">${caption}</option>
+            %endif
+        %endfor
+      </select>
+    </td>
+    <td class="buttonset">
+        <button type="button" id="add-field">Add &rarr;</button>
+        <button type="button" id="rm-field">&larr; Remove</button>
+        <button type="button" id="move-up">Move Up</button>
+        <button type="button" id="move-down">Move Down</button>
+    </td>
+    <td>
+      <select size="10" id="fields-to" class="right"
+              name="choices" multiple="multiple">
+          %for field in view['fields']:
+              %if field not in ('', 'id'):
+                  <option value="${field}">${field}</option>
+            %endif
+          %endfor
+      </select>
+    </td>
+  </tr>
+  <tr><td class="separator">&nbsp;</td></tr>
+  <tr>
+    <th colspan="3" class="section">
+      Criteria
+      <button type="button" class="crit-add">Add</button>
+    </th>
+  </tr>
+  %for idx, row in enumerate(view['criteria']):
+  <%
+    joiner = row[0]
+    criterion = row[1]
+  %>
+  <tr class="crit-row">
+    <td colspan="3">
+        <select id="crit-andor-${idx}"
+                name="crit-andor-${idx}">
+            %if joiner == 'AND':
+            <option value="AND" selected="selected">AND</option>
+            <option value="OR">OR</option>
+            %elif joiner == 'OR':
+            <option value="AND">AND</option>
+            <option value="OR" selected="selected">OR</option>
+            %else:
+            <option value="AND">AND</option>
+            <option value="OR">OR</option>
+            %endif
+        </select>
+        <select id="crit-field-${idx}"
+                name="crit-field-${idx}">
+          %for field, caption in schema:
+          %if field == criterion[1]:
+          <option value="${field}" selected="selected">
+              ${caption}
+          </option>
+          %else:
+          <option value="${field}">${caption}</option>
+          %endif
+          %endfor
+        </select>
+        <select id="crit-op-${idx}" name="crit-op-${idx}">
+        %for op, caption in ops:
+            %if op == criterion[0]:
+            <option value="${op}" selected="selected">${caption}</option>
+            %else:
+            <option value="${op}">${caption}</option>
+            %endif
+        %endfor
+        </select>
+        <input type="text"
+               id="crit-val-${idx}"
+               name="crit-val-${idx}"
+               value="${criterion[2]}"
+               size="35"/>
+    </td>
+  </tr>
+  %endfor
+  <tr><td class="separator">&nbsp;</td></tr>
+  <tr>
+    <th colspan="3" class="section">
+      Sorting
+      <button type="button" class="sort-add">Add</button>
+    </th>
+  </tr>
+  %for idx, sort in enumerate(view['sort']):
+  <tr class="sort-row">
+    <td colspan="3">
+      <select id="sort-field-${idx}"
+              name="sort-field-${idx}">
+        <option value="">-- Delete --</option>
+        %for field, caption in schema:
+        %if field == sort[1:]:
+        <option value="${field}" selected="selected">
+            ${caption}
+        </option>
+        %else:
+        <option value="${field}">${caption}</option>
+        %endif
+        %endfor
+      </select>
+      <input type="radio" id="sort-order-a-${idx}"
+      %if sort[0] == '+':
+          checked="checked"
+      %endif
+          name="sort-order-${idx}" value="asc"/>
+      <label for="sort-order-a-${idx}">Ascending</label>
+      <input type="radio" id="sort-order-d-${idx}"
+        %if sort[0] == '-':
+            checked="checked"
+        %endif
+          name="sort-order-${idx}" value="desc"/>
+      <label for="sort-order-d-${idx}">Descending</label>
+    </td>
+  </tr>
+  %endfor
+  <tr>
+    <td colspan='3'>
+      <input type="submit" id="submit" name="submit" value="Save View"/>
+    </td>
+  </tr>
+</table>
+
+</form>
+
+</div>

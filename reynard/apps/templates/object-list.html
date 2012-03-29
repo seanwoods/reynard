@@ -1,0 +1,78 @@
+<%inherit file="base.html"/>
+<%block name="title">Object List</%block>
+
+<form action="${url('/objects/%s' % class_)}"
+      method="post"
+      id="list-object-form">
+<table class="rey-table rey-obj-list">
+%if data:
+    <th class="nodat">Actions</th>
+%for offset, urn, identifier, caption, datatype, extra in schema:
+%if datatype not in ('password', 'id'):
+    <th><span title="${identifier}">${caption}</span></th>
+%endif
+%endfor
+%endif
+
+%for record in data:
+<tr>
+<td class="nodat">
+  <input type="checkbox"
+         name="select"
+         class="select"
+         id="select_${record['id']}"
+         value="${record['id']}"/>
+
+<% action = url('/objects/%s/%s' % (class_, record['id'])) %>
+
+%if mode == 'view':
+    <% action = action + "?view=%s" % view %>
+%endif
+
+<a href="${action}"><img src="/static/page_white_edit.png" alt="Edit Object"/></a>
+<a href="#" id="delete-obj-${record['id']}" title="Delete Object" class="delete-obj"><img src="/static/page_white_delete.png" alt="Delete Object"/></a>
+</td>
+%for offset, urn, identifier, caption, datatype, extra in schema:
+
+    <% val = record[identifier] %>
+
+%if datatype == 'P' and val is not None:
+    <td>${pointers[extra].get(val, val)}</td>
+%elif datatype not in ('password', 'id'):
+    %if record.get(identifier) is None:
+        <td>&nbsp;</td>
+    %elif len(str(record[identifier])) > 30:
+        <td>${record[identifier][0:30]}...</td>
+    %else:
+        <td>${record[identifier]}</td>
+    %endif
+%endif
+
+%endfor
+</tr>
+%endfor
+</table>
+
+<p>
+<span>With selected: </span>
+<select name="action" id="action">
+    <option value="">-- Choose --</option>
+    <option value="del">Delete Objects</option>
+</select>
+<input type="hidden"
+       id="__mode"
+       name="__mode"
+       value="${mode} ${class_} ${view}"/>
+</p>
+
+<p>
+<a href="${url('/objects/%s/new' % class_)}">Create New</a>
+<a href="${url('/schemas/%s' % class_)}">Edit Schema</a>
+%if mode == 'view':
+<a href="${url('/views/%s/%s' % (class_, view))}">Edit This View</a>
+%else:
+<a href="${url('/views/%s/new' % class_)}">Create View</a>
+%endif
+</p>
+
+</form>

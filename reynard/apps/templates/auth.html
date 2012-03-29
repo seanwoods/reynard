@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Log In{% endblock %}
+
+{% block content %}
+
+<form method="post" action="{{ url_for('login') }}" autocomplete="off">
+    <table id="login-form">
+      <tr>
+        <td colspan="2">
+            <p>A valid login is required to continue.</p>
+        </td>
+      </tr>
+      <tr>
+        <th>Username</th>
+        <td><input type="text" name="username" size="25"/></td>
+      </tr>
+      <tr>
+        <th>Password</th>
+        <td><input type="password" name="password" size="25"/></td>
+      </tr>
+      <tr>
+        <td colspan="2">
+        <input type="submit" name="login" value="Log In"/>
+        </td>
+      </tr>
+    </table>
+    {% if 'r' in request.args %}
+    <input type="hidden" name="r" value="{{ request.args['r'] }}"/>
+    {% endif %}
+</form>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+body {
+    font-family: Lucida Grande, Lucida Sans Unicode, sans-serif;
+    text-align: center;
+    font-size: 13px;
+}
+a {
+    color: #0000EE;
+}
+a:visited {
+    color: #0000EE;
+}
+a img {
+    border: 0;
+}
+
+#login-form {
+    margin: 200px auto 5px auto;
+    width: 175px;
+}
+
+.rey-table {
+    margin: 5px auto 5px auto;
+}
+.rey-form {
+    /*border-radius: 3px;
+    box-shadow: 0 0 10px #CCC;*/
+    padding: 10px;
+}
+.rey-form th {
+    padding-right: 5px;
+    text-align: left;
+}
+.rey-leftright-picker .arg-name {
+    /*width: 20%;*/
+}
+.rey-leftright-picker .arg-sep {
+    /*width: 2%;*/
+}
+.rey-leftright-picker .arg-desc {
+
+}
+.rey-leftright-picker .arg-instr {
+    font-size: 13px;
+    margin: 5px auto 5px auto;
+    width: 450px;
+}
+.rey-leftright-picker .field-choice {
+    margin: 5px auto 5px auto;
+}
+.rey-leftright-picker .field-choice td {
+    margin: 5px;
+}
+.rey-leftright-picker .field-choice th.section {
+    border-bottom: solid 2px #000;
+}
+.rey-leftright-picker .field-choice td.separator {
+    padding-top: 25px;
+}
+.rey-leftright-picker .field-choice .buttonset button {
+    display: block;
+    margin: 5px;
+    width: 100px;
+}
+.rey-leftright-picker .field-choice select.left,
+.rey-leftright-picker .field-choice select.right {
+    width: 250px;
+}
+.rey-leftright-picker .field-choice th {
+    font-weight: bold;
+}
+.rey-multipointer select {
+    display: block;
+    margin: 3px 0 3px 0;
+}
+.rey-obj-list {
+    border-collapse: collapse;
+}
+.rey-obj-list th,
+.rey-obj-list td {
+    font-size: 13px;
+    padding: 3px;
+    vertical-align: middle;
+}
+.rey-obj-list th {
+    border-bottom: solid 2px #000000;
+}
+.rey-obj-list td {
+    border-bottom: solid 1px #000000;
+    text-align: left;
+    white-space: nowrap;
+}
+.rey-obj-list .nodat {
+    padding-right: 10px;
+}
