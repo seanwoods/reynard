@@ -1,3 +1,4 @@
 *.pyc
 *.ini
 *.swp
+.DS_Store
