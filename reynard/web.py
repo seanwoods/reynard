@@ -62,7 +62,6 @@ def mount(app, mount_point="/", config={}, auto_template=True):
 
     if auto_template and 'templates' not in config:
         filename = sys.modules[app.__module__].__file__
-        print filename
         config = add_template_to_config(filename, config)
     
     config = {mount_point: config}
@@ -82,7 +81,7 @@ def emit_template(template_name=None, autoexpose=True, useattr=None):
             path = cherrypy.request.app.script_name + "/"
             tpl_dir = cherrypy.request.app.config[path].get('templates')
             template_name = f.template_name
-            pprint(cherrypy.request.app)
+            
             if tpl_dir is None:
                 tpl_dir = args[0].templates
             
