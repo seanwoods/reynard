@@ -47,7 +47,6 @@ class Connection(object):
 
     def send_msg(self, msg):
         msg = msg.encode("utf-8")
-
         self.socket.send(msg)
 
         return self.socket.recv_multipart()
@@ -209,13 +208,62 @@ class Database(object):
             else:
                 return result[0][1:]
     
-    def view(self, view_name, index_by=None):
+    def view(self, view_name, arguments=None, index_by=None):
         if self.state != 'view':
             self.flush()
             self.state = 'view'
+        
+        arg_keys = []
+        arg_values = []
 
-        self.cache = view_name
+        if arguments:
+            arg_keys = [i for i in arguments]
+            arg_values = [arguments.get(i) for i in arg_keys]
 
+            arg_keys = ' '.join(arg_keys)
+            arg_values = ' '.join(
+                ['"%s"' % i.replace('"','""') for i in arg_values]
+            )
+        
+        self.cache = [view_name, arg_keys, arg_values]
+
+        response = self.execute()
+
+        fields, data = (response[0], response[1:])
+
+        if index_by:
+            output = {}
+
+            for dat in data:
+                obj = dict(zip(fields, dat))
+                set_list(output, obj.get(index_by), obj)
+                
+        else:
+            output = [dict(zip(fields, dat)) for dat in data]
+
+        return (fields, output)
+    
+    # TODO much duplication between view and find
+
+    def find(self, class_, arguments=None, index_by=None):
+        if self.state != 'find':
+            self.flush()
+            self.state = 'find'
+        
+        arg_keys = []
+        arg_values = []
+
+        if arguments:
+            arg_keys = [i for i in arguments]
+            arg_values = [arguments.get(i) for i in arg_keys]
+
+            arg_keys = ' '.join(arg_keys)
+            arg_values = ' '.join(
+                ['"%s"' % i.replace('"','""') for i in arg_values]
+            )
+        
+        self.cache = [class_, arg_keys, arg_values]
+        
         response = self.execute()
 
         fields, data = (response[0], response[1:])
@@ -386,6 +434,12 @@ class Database(object):
 
         return self.msg
 
+    def flush_find(self):
+        self.msg.add_segment(["FINDOBJ", 2])
+        self.msg.add_segment(self.cache)
+
+        return self.msg
+
     def flush_listobjs(self):
         self.msg.add_segment(["LISTOBJS", 1])
         # TODO delete? self.msg.add_segment([1,2,3])
@@ -431,12 +485,13 @@ class Database(object):
         records = self.cxn.send_msg(msg)
 
         self.elapsed_time = time.time() - start_time
+        self.elapsed_time_ms = int(round(self.elapsed_time, 3) * 1000)
         
         if self.logger:
             operation = msg[0:msg.find(RECORD_DELIM)]
 
             self.logger.info("Database response for %-20s %s ms" %
-                (operation, round(self.elapsed_time, 3) * 1000))
+                (operation, self.elapsed_time_ms))
 
         for rec in records:
             if rec == SEGMENT_DELIM:

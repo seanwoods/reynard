@@ -43,7 +43,8 @@ $(document).ready(function (e) {
 <select id="table_selector">
     <option id="">-- Select --</option>
 
-%for ident, caption in classes.items():
+%for ident in sorted(classes):
+    <% caption = classes[ident] %>
     %if ident == current_class:
     <option value="${ident}" selected="selected">${caption}</option>
     %else:

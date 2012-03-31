@@ -16,11 +16,18 @@ class ReynardAPI(object):
                 return db.get(class_, ident)
     
     @emit_json
-    def views(self, view):
+    def views(self, view, **kwargs):
         db = cherrypy.request.db
 
         if cherrypy.request.method == 'GET':
-            return db.view(view)
+            return db.view(view, kwargs)
+    
+    @emit_json
+    def find(self, class_, **kwargs):
+        db = cherrypy.request.db
+        
+        if cherrypy.request.method == 'GET':
+            return db.find(class_, kwargs)
 
     @emit_json
     def schemas(self, class_):
