@@ -82,8 +82,12 @@ class Message(object):
 
         if isinstance(segment, basestring):
             self.buf.write(segment)
+        elif isinstance(segment, int):
+            self.buf.write(str(segment))
         else:
-            self.buf.write(RECORD_DELIM.join([str(i) for i in segment]))
+            for record in segment:
+                self.add_record(record)
+            #self.buf.write(RECORD_DELIM.join([str(i) for i in segment]))
         
         self.segno += 1
 
@@ -93,6 +97,8 @@ class Message(object):
         
         if isinstance(record, basestring):
             self.buf.write(record)
+        elif isinstance(record, int):
+            self.buf.write(str(record))
         else:
             self.buf.write(FIELD_DELIM.join([str(i) for i in record]))
 
@@ -208,7 +214,7 @@ class Database(object):
             else:
                 return result[0][1:]
     
-    def view(self, view_name, arguments=None, index_by=None):
+    def view(self, view_name, arguments=None, index_by=None, slice_=None):
         if self.state != 'view':
             self.flush()
             self.state = 'view'
@@ -225,11 +231,19 @@ class Database(object):
                 ['"%s"' % i.replace('"','""') for i in arg_values]
             )
         
-        self.cache = [view_name, arg_keys, arg_values]
+        if slice_:
+            self.cache = [(view_name, slice_), arg_keys, arg_values]
+        else:
+            self.cache = [view_name, arg_keys, arg_values]
 
         response = self.execute()
 
-        fields, data = (response[0], response[1:])
+        length, fields, data = (response[0], response[1], response[2:])
+        
+        length = int(length[0])
+
+        self.objects_in_result = len(data)
+        self.objects_in_db = length
 
         if index_by:
             output = {}
@@ -285,7 +299,11 @@ class Database(object):
             self.flush()
             self.state = 'listobj'
         
-        self.cache = args
+        if 'slice_' in kwargs:
+            # TODO right now one slice -> many args
+            self.cache = [(i, kwargs['slice_']) for i in args]
+        else:
+            self.cache = args
         
         if 'multipart' not in kwargs:
             data = self.execute()
@@ -296,7 +314,15 @@ class Database(object):
             
             for datum in data:
                 class_ = datum[0][0]
+                objects_in_db = int(datum[0][1])
                 schema = datum[1]
+                
+                if objects_in_db < 0:
+                    self.objects_in_db = None
+                else:
+                    self.objects_in_db = objects_in_db
+                
+                self.objects_in_result = 0
 
                 for row in datum[2:]:
                     dif = len(schema) - len(row)
@@ -313,6 +339,7 @@ class Database(object):
                                       obj)
                     else:
                         set_list(output, class_, obj)
+                        self.objects_in_result += 1
             
             if len(args) == 1:
                 return output[args[0]]

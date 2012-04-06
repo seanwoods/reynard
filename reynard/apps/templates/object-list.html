@@ -37,14 +37,14 @@
     <% val = record[identifier] %>
 
 %if datatype == 'P' and val is not None:
-    <td>${pointers[extra].get(val, val)}</td>
+    <td>${pointers[extra].get(val, val)|h}</td>
 %elif datatype not in ('password', 'id'):
     %if record.get(identifier) is None:
         <td>&nbsp;</td>
     %elif len(str(record[identifier])) > 30:
-        <td>${record[identifier][0:30]}...</td>
+        <td>${record[identifier][0:30]|h}...</td>
     %else:
-        <td>${record[identifier]}</td>
+        <td>${record[identifier]|h}</td>
     %endif
 %endif
 
@@ -52,6 +52,29 @@
 </tr>
 %endfor
 </table>
+
+<%def name="slice_link(lower, upper)">
+    <% slice_lower, slice_upper = [int(i) for i in slice.split(':')] %>
+    %if lower >= slice_lower and upper <= slice_upper:
+    <b>${lower}-${upper}</b>
+    %else:
+    <a href="${url()}?slice=${lower}:${upper}">
+        ${lower}-${upper}
+    </a>&nbsp;
+    %endif
+</%def>
+
+<p>
+%if slice and objects_in_db > 20:
+    %for slice_ in range(objects_in_db / 20):
+    ${slice_link(20*slice_+1, 20*slice_+20)}
+    %endfor
+    <% rem = objects_in_db % 20 %>
+    %if rem > 0:
+    ${slice_link(objects_in_db - rem +1, objects_in_db)}
+    %endif
+%endif
+</p>
 
 <p>
 <span>With selected: </span>

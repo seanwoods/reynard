@@ -116,13 +116,22 @@ class AdminApp(object):
             page['schema'] = db.schema(class_)
             
             page['pointers'] = db.pointers(class_)
+            
+            if 'slice' in kwargs:
+                if re.match(r'^(\d+):(\d+)$', kwargs['slice']):
+                    page['slice'] = kwargs['slice']
+                else:
+                    page['slice'] = '1:20'
+            else:
+                page['slice'] = '1:20'
 
-            page['data'] = db.list(class_)
-
+            page['data'] = db.list(class_, slice_=page['slice'])
+            page['objects_in_db'] = db.objects_in_db
+            page['objects_in_result'] = db.objects_in_result
+            
             return page
 
         else:
-            
             if cherrypy.request.method == 'POST':
                 # Save new object data.
                 
@@ -298,12 +307,29 @@ class AdminApp(object):
             page['template'] = 'object-list.html'
             page['js'] = ('list-objects.js',)
             
-            page['current_class'] = 'pets' # TODO change
+            _, view = db.find("SysView", dict(name=ident))
+
+            if 'slice' in kwargs:
+                if re.match(r'^(\d+):(\d+)$', kwargs['slice']):
+                    page['slice'] = kwargs['slice']
+                else:
+                    page['slice'] = '1:20'
+            else:
+                page['slice'] = '1:20'
+            
+            if len(view) > 0:
+                page['current_view'] = view[0]['name']
+                page['schema'], page['data'] = \
+                    db.view(view[0]['name'], slice_=page['slice'])
+                page['objects_in_db'] = db.objects_in_db
+                page['objects_in_result'] = db.objects_in_result
+            else:
+                raise cherrypy.HTTPError(404)
+
+            page['current_class'] = view[0]['class']
 
             page['mode'] = 'view'
-            page['class_'] = 'pets' # TODO change
-            
-            page['schema'], page['data'] = db.view(ident)
+            page['class_'] = view[0]['class']
             
             for idx, field in enumerate(page['schema']):
                 sch = [None, None, field, field, "text", None]

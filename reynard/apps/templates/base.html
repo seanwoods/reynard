@@ -57,7 +57,11 @@ $(document).ready(function (e) {
 <select id="view_selector">
     <option id="">-- Select --</option>
     %for ident, abbrev, caption in views:
+    %if abbrev == current_view:
+    <option value="${abbrev}" selected="selected">${caption}</option>
+    %else:
     <option value="${abbrev}">${caption}</option>
+    %endif
     %endfor
 </select>
 
