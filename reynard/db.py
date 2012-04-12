@@ -225,7 +225,8 @@ class Database(object):
         if arguments:
             arg_keys = [i for i in arguments]
             arg_values = [arguments.get(i) for i in arg_keys]
-
+            
+            # TODO better escaping, should only need to replace delimeters
             arg_keys = ' '.join(arg_keys)
             arg_values = ' '.join(
                 ['"%s"' % i.replace('"','""') for i in arg_values]

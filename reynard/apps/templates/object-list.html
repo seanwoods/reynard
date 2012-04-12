@@ -66,12 +66,40 @@
 
 <p>
 %if slice and objects_in_db > 20:
-    %for slice_ in range(objects_in_db / 20):
-    ${slice_link(20*slice_+1, 20*slice_+20)}
-    %endfor
+    <% num_slices = objects_in_db / 20 %>
     <% rem = objects_in_db % 20 %>
-    %if rem > 0:
-    ${slice_link(objects_in_db - rem +1, objects_in_db)}
+    % if num_slices > 10:
+        <b>Slice </b>
+        <select id="slice_selector">
+        %for idx, slice_ in enumerate(range(num_slices)):
+        <% sl = str(20*slice_+1) + ":" + str(20*slice_+20) %>
+        %if sl == slice:
+            <option value="${sl}" selected="selected">
+                ${idx + 1}
+            </option>
+        %else:
+            <option value="${sl}">${idx + 1}</option>
+        %endif
+        %endfor
+
+        %if rem > 0:
+        <%sl = str(objects_in_db - rem + 1) + ":" + str(objects_in_db) %>
+        %if sl == slice:
+        <option value="${sl}" selected="selected">${num_slices + 1}</option>
+        %else:
+        <option value="${sl}">${num_slices + 1}</option>
+        %endif
+        %endif
+
+        </select>
+        <b> of ${num_slices + 1}</b>
+    %else:
+        %for slice_ in range(objects_in_db / 20):
+        ${slice_link(20*slice_+1, 20*slice_+20)}
+        %endfor
+        %if rem > 0:
+        ${slice_link(objects_in_db - rem +1, objects_in_db)}
+        %endif
     %endif
 %endif
 </p>

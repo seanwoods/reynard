@@ -2,7 +2,7 @@
 <link rel="stylesheet" href="/static/common.css"/>
 <title><%block name="title"/></title>
 
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.2.min.js"></script>
+<script type="text/javascript" src="/static/jquery-1.7.2.min.js"></script>
 %for j in js:
 <script type="text/javascript" src="/static/${j}"></script>
 %endfor
@@ -32,6 +32,11 @@ $(document).ready(function (e) {
             window.location =
                 base_url + 'views/' + $(this).val().replace('_', '-');
         }
+    });
+
+    $("#slice_selector").change(function (e) {
+        window.location = 
+            base_url + 'objects/' + current_class + '?slice=' + $(this).val();
     });
 
 });
