@@ -1,0 +1,13 @@
+<%inherit file="base.html"/>
+<%block name="title">Text Editor</%block>
+
+<form action="${url('/save-text-object')}" method="post">
+    <input type="hidden" name="key" value="${key}"/>
+    <input type="hidden" name="class" value="${class_}"/>
+    <textarea name="text" cols="80" rows="20">
+%for line in data:
+${line['text']}
+%endfor
+</textarea>
+<input type="submit"/>
+</form>

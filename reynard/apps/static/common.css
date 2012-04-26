@@ -21,6 +21,12 @@ a img {
 .rey-table {
     margin: 5px auto 5px auto;
 }
+.rey-rectable th {
+    text-align: right;
+}
+.rey-rectable td {
+    text-align: left;
+}
 .rey-form {
     /*border-radius: 3px;
     box-shadow: 0 0 10px #CCC;*/

@@ -2,6 +2,70 @@
 <%block name="title">Schema Editor</%block>
 
 <form action="${url("/schemas/%s" % class_)}" method="post">
+
+<table class="rey-table rey-rectable">
+  <tr>
+    <th>Internal Name</th>
+    <td>${class_}</td>
+  </tr>
+  <tr>
+    <th>Description</th>
+    <td>
+      <input type="text"
+             size="30"
+             name="description"
+             id="description"
+             value="${meta.get('description', '')}"/>
+    </td>
+  </tr>
+  <tr>
+    <th>Metaclass</th>
+    <td>
+      <select name="metaclass" id="metaclass">
+        <%
+            opts = (('simple', 'Simple Object'),
+                    ('lines', 'Lines of Text'))
+        %>
+        %for k, v in opts:
+            %if meta.get('metaclass') == k:
+            <option value="${k}" selected="selected">${v}</option>
+            %else:
+            <option value="${k}">${v}</option>
+            %endif
+        %endfor
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th>Key Field</th>
+    <td>
+    <select name="key_field" id="key_field">
+    %for spec in schema:
+    %if spec[3].strip() != '':
+    <option value="${spec[2]}">${spec[3]}</option>
+    %else:
+    <option value="${spec[2]}">${spec[2]}</option>
+    %endif
+    %endfor
+    </select>
+    </td>
+  </tr>
+  <tr>
+    <th>Default Sort</th>
+    <td>
+    <select name="default_sort" id="default_sort">
+    %for spec in schema:
+    %if spec[3].strip() != '':
+    <option value="${spec[2]}">${spec[3]}</option>
+    %else:
+    <option value="${spec[2]}">${spec[2]}</option>
+    %endif
+    %endfor
+    </select>
+    </td>
+  </tr>
+</table>
+
 <table class="rey-table">
   <tr>
     <th>&nbsp;</th>
@@ -32,7 +96,7 @@
             ("CM", "Choice, Multiple"),
             ("D", "Date"),
             ("DT", "Date and Time"),
-            ("DO", "Database Document"),
+            ("DO", "Document"),
             ("E", "E-Mail Address"),
             ("F", "File"),
             ("I", "Interval (Elapsed Time)"),

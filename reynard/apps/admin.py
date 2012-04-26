@@ -79,6 +79,26 @@ class AdminApp(object):
         page['current_class'] = 'roles'
         
         return page
+    
+    # TODO re-vamp how the text object process works
+    def save_text_object(self, **kwargs):
+        db = cherrypy.request.db
+        
+        _, data = db.find("SysMeta", {"class": kwargs['class']})
+        
+        key_field = data[0]["key_field"]
+
+        text = re.split(r'\r*\n', kwargs.get('text', '').strip())
+        db.delcrit(kwargs['class'], '%s = "%s"' % (key_field, kwargs['key']))
+        
+        for line in text:
+            db.set("JobAdText", dict(job=kwargs['key'], text=line))
+        
+        url = cherrypy.url('/objects/%s' % kwargs['class'])
+
+        raise cherrypy.HTTPRedirect(url)
+
+    save_text_object.exposed = True
 
     @emit_template(useattr="template")
     def objects(self, class_=None, ident=None, **kwargs):
@@ -105,17 +125,16 @@ class AdminApp(object):
 
                 raise cherrypy.HTTPRedirect(url)
             
+            page['current_class'] = class_
+            page['schema'] = db.schema(class_)
+            page['pointers'] = db.pointers(class_)
+
+            # Regular object list
             page['template'] = 'object-list.html'
             page['js'] = ('list-objects.js',)
             
-            page['current_class'] = class_
-
             page['mode'] = 'object'
             page['class_'] = class_
-            
-            page['schema'] = db.schema(class_)
-            
-            page['pointers'] = db.pointers(class_)
             
             if 'slice' in kwargs:
                 if re.match(r'^(\d+):(\d+)$', kwargs['slice']):
@@ -162,23 +181,39 @@ class AdminApp(object):
 
                 raise cherrypy.HTTPRedirect(url)
 
-            page['template'] = 'object-editor.html'
-
             page['current_class'] = None
-            
-            page['mode'] = 'object'
-            page['class_'] = class_
+            page['schema'] = db.schema(class_)
             page['pointers'] = db.pointers(class_)
-
+            
             if ident.lower() == 'new':
                 page['identifier'] = 'new'
-                page['schema'] = db.schema(class_)
                 page['data'] = {}
             else:
                 page['identifier'] = ident
-                page['schema'] = db.schema(class_)
                 page['data'] = db.get(class_, ident)
+
+            _, data = db.find("SysMeta", {"class": class_})
             
+            # We need a text editor.
+            if len(data) > 0 and data[0]['metaclass'] == 'lines':
+                page['template'] = 'text-editor.html'
+                page['js'] = ('text-editor.js',)
+                
+                # TODO what happens if this is blank or unexpected value?
+                key = page['data'][data[0]['key_field']]
+
+                _, page['data'] = db.find("JobAdText", dict(job=key))
+                
+                page['class_'] = class_
+                page['key'] = key
+
+                return page
+
+            page['template'] = 'object-editor.html'
+            
+            page['mode'] = 'object'
+            page['class_'] = class_
+
             return page
 
     @emit_template("schema-editor.tpl")
@@ -187,6 +222,20 @@ class AdminApp(object):
         #class_ = hyphenated_to_camel(class_)
         
         if cherrypy.request.method == 'POST':
+            meta = {'class': class_,
+                    'description': kwargs.get('description',''),
+                    'metaclass': kwargs.get('metaclass',''),
+                    'key_field': kwargs.get('key_field',''),
+                    'default_sort': kwargs.get('default_sort','')}
+            
+            del(kwargs['description'])
+            del(kwargs['metaclass'])
+            del(kwargs['key_field'])
+            del(kwargs['default_sort'])
+
+            db.delcrit('SysMeta', 'class = "%s"' % class_)
+            db.set('SysMeta', meta)
+
             order = {}
 
             if isinstance(kwargs['order'], basestring):
@@ -225,6 +274,14 @@ class AdminApp(object):
 
         page = default_page()
         page['class_'] = class_
+        
+        sch, dat = db.find("SysMeta", {'class': class_})
+
+        if len(dat) > 0:
+            page['meta'] = dat[0]
+        else:
+            page['meta'] = {}
+        
         page['schema'] = db.schema(class_)
 
         return page

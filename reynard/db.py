@@ -172,6 +172,15 @@ class Database(object):
         if 'multipart' not in kwargs:
             return self.execute()
     
+    def delcrit(self, class_, crit):
+        if self.state != 'delcrit':
+            self.flush()
+            self.state = 'delcrit'
+
+        self.cache = [class_, crit]
+
+        return self.execute()
+
     def get(self, class_, *args, **kwargs):
         # args = list of object IDs for class
         if self.state != 'getobj':
@@ -387,7 +396,7 @@ class Database(object):
                 data[current_class][record[0]] = record[1]
 
         return data
-
+    
     # -
 
     def flush(self):
@@ -404,7 +413,7 @@ class Database(object):
         self.cache = {}
         self.schemas = {}
         self.state = None
-
+        
         return out
 
     def flush_setobj(self):
@@ -450,6 +459,12 @@ class Database(object):
 
         return self.msg
     
+    def flush_delcrit(self):
+        self.msg.add_segment(["DELCRIT", 2])
+        self.msg.add_segment(self.cache)
+
+        return self.msg
+    
     def flush_listobj(self):
         self.msg.add_segment(["LISTOBJ", len(self.cache) + 1])
         self.msg.add_segment(self.cache)
@@ -491,6 +506,21 @@ class Database(object):
         self.msg.add_segment(self.cache)
 
         return self.msg
+    
+    def flush_settxt(self):
+        lines = self.cache[1].insert(0, self.cache[0])
+        self.msg.add_segment(["SETTXT", len(lines)])
+        self.msg.add_segment(lines)
+
+    def flush_gettxt(self):
+        self.msg.add_segment(["GETTXT", 1])
+        self.msg.add_segment(self.cache)
+
+        return self.msg
+    
+    def flush_deltxt(self):
+        self.msg.add_segment(["DELTXT", 1])
+        self.msg.add_segment(self.cache)
 
     # -
 

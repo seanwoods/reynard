@@ -42,6 +42,13 @@
             </div>
         </td>
     </tr>
+    %elif type == 'DO':
+    <tr>
+        <th>${caption}</th>
+        <td>
+            <textarea name="${ident}" rows="18" cols="50">${val|h}</textarea>
+        </td>
+    </tr>
     %else:
     <tr>
         <th>${caption}</th>
