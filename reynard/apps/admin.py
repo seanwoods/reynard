@@ -214,7 +214,8 @@ class AdminApp(object):
             # We need a text editor.
             if len(data) > 0 and data[0]['metaclass'] == 'lines':
                 page['template'] = 'text-editor.html'
-                page['js'] = ('text-editor.js',)
+                page['js'] = ('ckeditor/ckeditor.js',
+                              'ckeditor/adapters/jquery.js')
                 
                 # TODO what happens if this is blank or unexpected value?
                 key = page['data'][data[0]['key_field']]
