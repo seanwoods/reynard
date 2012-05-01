@@ -1,14 +1,12 @@
 <%inherit file="base.html"/>
 <%block name="title">Text Editor</%block>
 
-<%def name="strip_non_ascii(inpt)"><% return ''.join([i for i in inpt if ord(i) < 128]) %></%def>
-
 <form action="${url('/save-text-object')}" method="post">
     <input type="hidden" name="key" value="${key}"/>
     <input type="hidden" name="class" value="${class_}"/>
     <textarea name="text" cols="80" rows="20">
 %for line in data:
-${strip_non_ascii(line['text'])}
+${line['text']|h}
 %endfor
 </textarea>
 <input type="submit"/>

@@ -87,7 +87,7 @@ class AdminApp(object):
         _, data = db.find("SysMeta", {"class": kwargs['class']})
         
         key_field = data[0]["key_field"]
-
+        
         text = re.split(r'\r*\n', kwargs.get('text', '').strip())
         db.delcrit(kwargs['class'], '%s = "%s"' % (key_field, kwargs['key']))
         
@@ -99,6 +99,23 @@ class AdminApp(object):
         raise cherrypy.HTTPRedirect(url)
 
     save_text_object.exposed = True
+
+    def edit_text_object(self, class_, ident):
+        db = cherrypy.request.db
+
+        _, data = db.find("SysMeta", {"class": class_})
+        
+        key_field = data[0]["key_field"]
+
+        _, data = db.find(class_, {key_field: ident})
+
+        redirect_to = data[0]['id']
+
+        url = cherrypy.url('/objects/%s/%s' % (class_, redirect_to))
+        
+        raise cherrypy.HTTPRedirect(url)
+
+    edit_text_object.exposed = True
 
     @emit_template(useattr="template")
     def objects(self, class_=None, ident=None, **kwargs):
@@ -206,7 +223,7 @@ class AdminApp(object):
                 
                 page['class_'] = class_
                 page['key'] = key
-
+                
                 return page
 
             page['template'] = 'object-editor.html'
@@ -263,7 +280,7 @@ class AdminApp(object):
                 for field in fields:
                     rec[field] = kwargs["%s.%s" % (order[offset], field)]
                 
-                if rec['datatype'] not in ('P', 'PM', 'SL'):
+                if rec['datatype'] not in ('DO', 'P', 'PM', 'SL'):
                     del(rec['extra'])
                 
                 db.set('sysSchema', rec, multipart=True)

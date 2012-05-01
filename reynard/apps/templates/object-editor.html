@@ -46,7 +46,10 @@
     <tr>
         <th>${caption}</th>
         <td>
-            <textarea name="${ident}" rows="18" cols="50">${val|h}</textarea>
+            <% target_obj, target_key = extra.split(' ') %>
+            <a href="${url('/edit-text-object/%s/%s' % (target_obj, identifier))}">
+                Edit this Text
+            </a>
         </td>
     </tr>
     %else:
